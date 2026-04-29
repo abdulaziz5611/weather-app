@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../weather/domain/usecases/get_weather_forecast.dart';
 import 'data/datasources/local_data_source/cities_local_data_source.dart';
 import 'data/datasources/local_data_source/cities_local_data_source_impl.dart';
 import 'data/repositories/cities_repository_impl.dart';
@@ -24,6 +25,7 @@ Future<void> initCitiesDi(GetIt sl) async {
       addCity: sl(),
       removeCity: sl(),
       reorderCities: sl(),
+      getWeatherForecast: sl<GetWeatherForecast>(),
     ),
   );
 

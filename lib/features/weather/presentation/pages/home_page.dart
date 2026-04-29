@@ -139,8 +139,17 @@ class _LoadedView extends StatelessWidget {
         child: Column(
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                GestureDetector(
+                  onTap: () => Navigator.of(context).pushNamed(RouteNames.settings),
+                  child: Container(
+                    decoration: GlassDecoration.pill(),
+                    padding: const EdgeInsets.all(8),
+                    child: const Icon(Icons.settings_outlined,
+                        color: AppColors.textPrimary, size: 20),
+                  ),
+                ),
                 GestureDetector(
                   onTap: () => Navigator.of(context).pushNamed(RouteNames.cities),
                   child: Container(

@@ -1,20 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_gradients.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/extensions.dart';
 import '../../../../core/utils/time_of_day_helper.dart';
 import '../../../../core/widgets/weather_icon.dart';
+import '../../../settings/presentation/cubit/settings_cubit.dart';
+import '../../../weather/domain/entities/current_weather.dart';
 import '../../domain/entities/saved_city.dart';
 
 class CityCard extends StatelessWidget {
   final SavedCity city;
+  final CurrentWeather? weather;
   final VoidCallback? onTap;
 
-  const CityCard({super.key, required this.city, this.onTap});
+  const CityCard({super.key, required this.city, this.weather, this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final unit = context.watch<SettingsCubit>().state.tempUnit;
     final period = TimeOfDayHelper.current();
     final subtitle = city.admin1 != null && city.admin1!.isNotEmpty
         ? '${city.admin1} · ${city.country}'
@@ -49,11 +55,27 @@ class CityCard extends StatelessWidget {
                 Text(subtitle, style: AppTypography.secondary),
               ],
             ),
-            const Positioned(
+            Positioned(
               right: 0,
               top: 0,
-              child: WeatherIcon(
-                  condition: WeatherCondition.partlyCloudy, size: 28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (weather != null)
+                    Text(
+                      weather!.temperature.toTemp(unit),
+                      style: AppTypography.numericLarge.copyWith(fontSize: 32),
+                    )
+                  else
+                    Text('—°', style: AppTypography.title),
+                  const SizedBox(height: 4),
+                  WeatherIcon(
+                    condition:
+                        weather?.condition ?? WeatherCondition.partlyCloudy,
+                    size: 24,
+                  ),
+                ],
+              ),
             ),
           ],
         ),

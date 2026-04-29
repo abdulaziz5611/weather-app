@@ -39,18 +39,19 @@ class SearchCubit extends Cubit<SearchState> {
   }
 
   Future<void> search(String query) async {
-    if (query.trim().isEmpty) {
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) {
       await loadRecents();
       return;
     }
     emit(SearchLoading(recents: _currentRecents()));
-    final result = await searchCities(query);
+    final result = await searchCities(trimmed);
     result.fold(
       (failure) => emit(SearchError(failure.message)),
       (results) => emit(
         results.isEmpty
-            ? SearchEmpty(query)
-            : SearchResults(results: results, query: query),
+            ? SearchEmpty(trimmed)
+            : SearchResults(results: results, query: trimmed),
       ),
     );
   }

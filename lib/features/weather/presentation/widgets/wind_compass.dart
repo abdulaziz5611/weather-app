@@ -1,10 +1,14 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/extensions.dart';
 import '../../../../core/widgets/glass_card.dart';
+import '../../../settings/domain/entities/unit_preferences.dart';
+import '../../../settings/presentation/cubit/settings_cubit.dart';
 
 class WindCompassCard extends StatelessWidget {
   final double speedKmh;
@@ -24,6 +28,7 @@ class WindCompassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final unit = context.watch<SettingsCubit>().state.windUnit;
     return GlassCard(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
       child: Column(
@@ -41,9 +46,9 @@ class WindCompassCard extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(speedKmh.round().toString(),
+                      Text(speedKmh.toWindSpeed(unit),
                           style: AppTypography.numericLarge.copyWith(fontSize: 30)),
-                      Text('km/h $_cardinal', style: AppTypography.label),
+                      Text('${unit.label} $_cardinal', style: AppTypography.label),
                     ],
                   ),
                 ),

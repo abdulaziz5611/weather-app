@@ -3,8 +3,6 @@ import 'package:dio/dio.dart';
 import '../../../../../core/constants/api_constants.dart';
 import '../../../../../core/error/exceptions.dart';
 import '../../../../../core/utils/coordinates.dart';
-import '../../models/air_quality_model.dart';
-import '../../models/weather_forecast_model.dart';
 import 'weather_remote_data_source.dart';
 
 class WeatherRemoteDataSourceImpl implements WeatherRemoteDataSource {
@@ -13,7 +11,7 @@ class WeatherRemoteDataSourceImpl implements WeatherRemoteDataSource {
   WeatherRemoteDataSourceImpl(this.dio);
 
   @override
-  Future<WeatherForecastModel> fetchForecast(Coordinates coords) async {
+  Future<Map<String, dynamic>> fetchForecast(Coordinates coords) async {
     try {
       final response = await dio.get(
         '${ApiConstants.openMeteoBaseUrl}/forecast',
@@ -30,7 +28,7 @@ class WeatherRemoteDataSourceImpl implements WeatherRemoteDataSource {
         },
       );
       if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
-        return WeatherForecastModel.fromJson(response.data as Map<String, dynamic>);
+        return Map<String, dynamic>.from(response.data as Map);
       }
       throw const ServerException();
     } on DioException catch (e) {
@@ -39,7 +37,7 @@ class WeatherRemoteDataSourceImpl implements WeatherRemoteDataSource {
   }
 
   @override
-  Future<AirQualityModel> fetchAirQuality(Coordinates coords) async {
+  Future<Map<String, dynamic>> fetchAirQuality(Coordinates coords) async {
     try {
       final response = await dio.get(
         '${ApiConstants.openMeteoAirQualityUrl}/air-quality',
@@ -50,7 +48,7 @@ class WeatherRemoteDataSourceImpl implements WeatherRemoteDataSource {
         },
       );
       if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
-        return AirQualityModel.fromJson(response.data as Map<String, dynamic>);
+        return Map<String, dynamic>.from(response.data as Map);
       }
       throw const ServerException();
     } on DioException catch (e) {

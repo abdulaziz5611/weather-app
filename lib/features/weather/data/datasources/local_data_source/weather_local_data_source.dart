@@ -1,6 +1,8 @@
-import '../../models/weather_forecast_model.dart';
+import '../../../../../core/utils/coordinates.dart';
 
 abstract class WeatherLocalDataSource {
-  Future<void> cacheForecast(WeatherForecastModel forecast);
-  Future<WeatherForecastModel?> getCachedForecast();
+  Future<void> cacheForecast(Coordinates coords, Map<String, dynamic> json);
+  Future<Map<String, dynamic>?> getCachedForecast(Coordinates coords);
+  Future<void> cacheAirQuality(Coordinates coords, Map<String, dynamic> json);
+  Future<Map<String, dynamic>?> getCachedAirQuality(Coordinates coords);
 }

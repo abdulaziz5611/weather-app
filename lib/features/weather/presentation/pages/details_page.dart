@@ -6,6 +6,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/types/weather_condition.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/widgets/gradient_background.dart';
+import '../../../settings/presentation/cubit/settings_cubit.dart';
 import '../../domain/entities/daily_forecast.dart';
 import '../../domain/entities/hourly_forecast.dart';
 import '../../domain/entities/weather_forecast.dart';
@@ -56,6 +57,9 @@ class DetailsPage extends StatelessWidget {
   }
 }
 
+bool _isSameDay(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
+
 class _LoadedView extends StatelessWidget {
   final WeatherForecast forecast;
   final dynamic airQuality;
@@ -71,6 +75,7 @@ class _LoadedView extends StatelessWidget {
   Widget build(BuildContext context) {
     final day = forecast.daily[dayIndex];
     final hours = _hourlyForDate(forecast.hourly, day.date);
+    final isToday = _isSameDay(day.date, DateTime.now());
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
@@ -79,27 +84,32 @@ class _LoadedView extends StatelessWidget {
         children: [
           _TopBar(label: _dayLabel(dayIndex, day.date)),
           const SizedBox(height: 12),
-          _Hero(day: day),
+          _Hero(forecast: forecast, day: day, isToday: isToday),
           const SizedBox(height: 16),
           TemperatureChart(hours: hours),
           const SizedBox(height: 12),
-          IntrinsicHeight(
-            child: Row(
-              children: [
-                Expanded(child: PrecipitationCard(day: day, hours: hours)),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: WindCompassCard(
-                    speedKmh: forecast.current.windSpeed,
-                    directionDegrees: forecast.current.windDirection,
+          if (isToday)
+            IntrinsicHeight(
+              child: Row(
+                children: [
+                  Expanded(child: PrecipitationCard(day: day, hours: hours)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: WindCompassCard(
+                      speedKmh: forecast.current.windSpeed,
+                      directionDegrees: forecast.current.windDirection,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
+                ],
+              ),
+            )
+          else
+            PrecipitationCard(day: day, hours: hours),
           const SizedBox(height: 12),
-          if (airQuality != null) AirQualityCard(airQuality: airQuality),
-          if (airQuality != null) const SizedBox(height: 12),
+          if (isToday && airQuality != null) ...[
+            AirQualityCard(airQuality: airQuality),
+            const SizedBox(height: 12),
+          ],
           SunMoonCard(sunrise: day.sunrise, sunset: day.sunset),
         ],
       ),
@@ -138,7 +148,7 @@ class _TopBar extends StatelessWidget {
               children: [
                 const Icon(Icons.chevron_left_rounded,
                     size: 22, color: AppColors.textPrimary),
-                Text('Porto', style: AppTypography.body),
+                Text('Back', style: AppTypography.body),
               ],
             ),
           ),
@@ -153,11 +163,20 @@ class _TopBar extends StatelessWidget {
 }
 
 class _Hero extends StatelessWidget {
+  final WeatherForecast forecast;
   final DailyForecast day;
-  const _Hero({required this.day});
+  final bool isToday;
+
+  const _Hero({
+    required this.forecast,
+    required this.day,
+    required this.isToday,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final unit = context.watch<SettingsCubit>().state.tempUnit;
+    final big = isToday ? forecast.current.temperature : day.temperatureMax;
     final summary = day.precipitationSum > 1
         ? 'Rain showers · ${day.precipitationSum.toStringAsFixed(1)} mm expected'
         : '${WeatherConditionMapper.label(day.condition)} day expected';
@@ -171,7 +190,7 @@ class _Hero extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                day.temperatureMax.toTemp(),
+                big.toTemp(unit),
                 style: AppTypography.display.copyWith(fontSize: 72),
               ),
               const SizedBox(width: 12),
@@ -180,10 +199,15 @@ class _Hero extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('H ${day.temperatureMax.toTemp()}',
+                    Text('H ${day.temperatureMax.toTemp(unit)}',
                         style: AppTypography.body),
-                    Text('L ${day.temperatureMin.toTemp()}',
+                    Text('L ${day.temperatureMin.toTemp(unit)}',
                         style: AppTypography.secondary),
+                    if (isToday)
+                      Text(
+                        'Feels ${forecast.current.feelsLike.toTemp(unit)}',
+                        style: AppTypography.secondary,
+                      ),
                   ],
                 ),
               ),

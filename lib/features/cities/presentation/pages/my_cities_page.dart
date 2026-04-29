@@ -29,7 +29,8 @@ class _MyCitiesPageState extends State<MyCitiesPage> {
   }
 
   Future<void> _addCity() async {
-    final picked = await Navigator.of(context).pushNamed<Object?>(RouteNames.search);
+    final picked =
+        await Navigator.of(context).pushNamed<Object?>(RouteNames.search);
     if (!mounted || picked == null || picked is! CitySearchResult) return;
     final saved = SavedCity(
       id: '${picked.latitude.toStringAsFixed(4)}_${picked.longitude.toStringAsFixed(4)}',
@@ -79,6 +80,16 @@ class _MyCitiesPageState extends State<MyCitiesPage> {
                     ),
                     const Spacer(),
                     GestureDetector(
+                      onTap: () => Navigator.of(context).pushNamed(RouteNames.settings),
+                      child: Container(
+                        decoration: GlassDecoration.pill(),
+                        padding: const EdgeInsets.all(8),
+                        child: const Icon(Icons.settings_outlined,
+                            color: AppColors.textPrimary, size: 22),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
                       onTap: _addCity,
                       child: Container(
                         decoration: GlassDecoration.pill(),
@@ -105,18 +116,56 @@ class _MyCitiesPageState extends State<MyCitiesPage> {
                                   color: AppColors.textPrimary),
                             ),
                           ),
-                        CitiesLoaded(:final cities) => cities.isEmpty
-                            ? _EmptyView(onAdd: _addCity)
-                            : ListView(
-                                padding:
-                                    const EdgeInsets.only(top: 4, bottom: 32),
-                                children: cities
-                                    .map((c) => CityCard(
-                                          city: c,
-                                          onTap: () => _selectCity(c),
-                                        ))
-                                    .toList(),
-                              ),
+                        CitiesLoaded(:final cities, :final weather) =>
+                          cities.isEmpty
+                              ? _EmptyView(onAdd: _addCity)
+                              : RefreshIndicator(
+                                  color: AppColors.textPrimary,
+                                  backgroundColor: AppColors.background,
+                                  onRefresh: () =>
+                                      context.read<CitiesCubit>().load(),
+                                  child: ListView(
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(),
+                                    padding: const EdgeInsets.only(
+                                        top: 4, bottom: 32),
+                                    children: cities
+                                        .map((c) => Dismissible(
+                                              key: ValueKey(c.id),
+                                              direction:
+                                                  DismissDirection.endToStart,
+                                              background: Container(
+                                                alignment:
+                                                    Alignment.centerRight,
+                                                margin: const EdgeInsets.only(
+                                                    bottom: 12),
+                                                padding: const EdgeInsets.only(
+                                                    right: 24),
+                                                decoration: BoxDecoration(
+                                                  color:
+                                                      AppColors.accentDanger,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          20),
+                                                ),
+                                                child: const Icon(
+                                                  Icons
+                                                      .delete_outline_rounded,
+                                                  color: AppColors.textPrimary,
+                                                ),
+                                              ),
+                                              onDismissed: (_) => context
+                                                  .read<CitiesCubit>()
+                                                  .remove(c.id),
+                                              child: CityCard(
+                                                city: c,
+                                                weather: weather[c.id],
+                                                onTap: () => _selectCity(c),
+                                              ),
+                                            ))
+                                        .toList(),
+                                  ),
+                                ),
                         CitiesError(:final message) => Center(
                             child: Text(message,
                                 style: AppTypography.body,

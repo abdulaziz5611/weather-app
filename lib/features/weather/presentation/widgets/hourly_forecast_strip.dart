@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/weather_icon.dart';
+import '../../../settings/domain/entities/unit_preferences.dart';
+import '../../../settings/presentation/cubit/settings_cubit.dart';
 import '../../domain/entities/hourly_forecast.dart';
 
 class HourlyForecastStrip extends StatelessWidget {
@@ -14,8 +17,15 @@ class HourlyForecastStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final unit = context.watch<SettingsCubit>().state.tempUnit;
     final now = DateTime.now();
-    final upcoming = hourly.where((h) => h.time.isAfter(now)).take(23).toList();
+    final currentHourIndex = hourly.indexWhere((h) =>
+        h.time.year == now.year &&
+        h.time.month == now.month &&
+        h.time.day == now.day &&
+        h.time.hour == now.hour);
+    final start = currentHourIndex >= 0 ? currentHourIndex : 0;
+    final visible = hourly.skip(start).take(24).toList();
 
     return GlassCard(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
@@ -35,14 +45,15 @@ class HourlyForecastStrip extends StatelessWidget {
             height: 96,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              itemCount: upcoming.length + 1,
+              itemCount: visible.length,
               separatorBuilder: (_, __) => const SizedBox(width: 24),
               itemBuilder: (context, i) {
-                if (i == 0 && hourly.isNotEmpty) {
-                  return _HourlyItem(label: 'Now', hour: hourly.first);
-                }
-                final h = upcoming[i - 1];
-                return _HourlyItem(label: h.time.toHourLabel(), hour: h);
+                final h = visible[i];
+                return _HourlyItem(
+                  label: i == 0 ? 'Now' : h.time.toHourLabel(),
+                  hour: h,
+                  unit: unit,
+                );
               },
             ),
           ),
@@ -55,8 +66,9 @@ class HourlyForecastStrip extends StatelessWidget {
 class _HourlyItem extends StatelessWidget {
   final String label;
   final HourlyForecast hour;
+  final TempUnit unit;
 
-  const _HourlyItem({required this.label, required this.hour});
+  const _HourlyItem({required this.label, required this.hour, required this.unit});
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +82,7 @@ class _HourlyItem extends StatelessWidget {
         else
           const SizedBox(height: 14),
         WeatherIcon(condition: hour.condition, size: 22),
-        Text(hour.temperature.toTemp(), style: AppTypography.body),
+        Text(hour.temperature.toTemp(unit), style: AppTypography.body),
       ],
     );
   }

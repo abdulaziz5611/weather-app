@@ -1,12 +1,15 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/weather_icon.dart';
+import '../../../settings/domain/entities/unit_preferences.dart';
+import '../../../settings/presentation/cubit/settings_cubit.dart';
 import '../../domain/entities/daily_forecast.dart';
 
 class DailyForecastList extends StatelessWidget {
@@ -17,6 +20,7 @@ class DailyForecastList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final unit = context.watch<SettingsCubit>().state.tempUnit;
     final shown = daily.take(10).toList();
     final overallMin = shown.map((d) => d.temperatureMin).reduce(min);
     final overallMax = shown.map((d) => d.temperatureMax).reduce(max);
@@ -46,6 +50,7 @@ class DailyForecastList extends StatelessWidget {
                 day: d,
                 overallMin: overallMin,
                 overallMax: overallMax,
+                unit: unit,
               ),
             );
           }),
@@ -65,12 +70,14 @@ class _DailyRow extends StatelessWidget {
   final DailyForecast day;
   final double overallMin;
   final double overallMax;
+  final TempUnit unit;
 
   const _DailyRow({
     required this.label,
     required this.day,
     required this.overallMin,
     required this.overallMax,
+    required this.unit,
   });
 
   @override
@@ -87,8 +94,8 @@ class _DailyRow extends StatelessWidget {
           WeatherIcon(condition: day.condition, size: 20),
           const SizedBox(width: 12),
           SizedBox(
-            width: 32,
-            child: Text(day.temperatureMin.toTemp(),
+            width: 36,
+            child: Text(day.temperatureMin.toTemp(unit),
                 style: AppTypography.secondary, textAlign: TextAlign.right),
           ),
           const SizedBox(width: 8),
@@ -127,8 +134,8 @@ class _DailyRow extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           SizedBox(
-            width: 32,
-            child: Text(day.temperatureMax.toTemp(),
+            width: 36,
+            child: Text(day.temperatureMax.toTemp(unit),
                 style: AppTypography.body, textAlign: TextAlign.right),
           ),
         ],

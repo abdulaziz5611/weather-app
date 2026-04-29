@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../weather/domain/entities/current_weather.dart';
 import '../../domain/entities/saved_city.dart';
 
 sealed class CitiesState extends Equatable {
@@ -19,10 +20,12 @@ class CitiesLoading extends CitiesState {
 
 class CitiesLoaded extends CitiesState {
   final List<SavedCity> cities;
-  const CitiesLoaded(this.cities);
+  final Map<String, CurrentWeather> weather;
+
+  const CitiesLoaded({required this.cities, this.weather = const {}});
 
   @override
-  List<Object?> get props => [cities];
+  List<Object?> get props => [cities, weather];
 }
 
 class CitiesError extends CitiesState {
