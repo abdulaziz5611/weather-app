@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../features/cities/presentation/cubit/cities_cubit.dart';
+import '../../features/cities/presentation/pages/my_cities_page.dart';
+import '../../features/search/presentation/cubit/search_cubit.dart';
+import '../../features/search/presentation/pages/search_page.dart';
 import '../../features/weather/presentation/cubit/weather_cubit.dart';
 import '../../features/weather/presentation/pages/details_page.dart';
 import '../../features/weather/presentation/pages/home_page.dart';
@@ -26,6 +30,20 @@ class AppRouter {
           builder: (_) => BlocProvider<WeatherCubit>.value(
             value: sl<WeatherCubit>(),
             child: DetailsPage(selectedDayIndex: dayIndex),
+          ),
+        );
+      case RouteNames.cities:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider<CitiesCubit>.value(
+            value: sl<CitiesCubit>(),
+            child: const MyCitiesPage(),
+          ),
+        );
+      case RouteNames.search:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider<SearchCubit>(
+            create: (_) => sl<SearchCubit>(),
+            child: const SearchPage(),
           ),
         );
       default:

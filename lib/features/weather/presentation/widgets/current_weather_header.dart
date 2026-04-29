@@ -9,27 +9,33 @@ import '../../domain/entities/weather_forecast.dart';
 class CurrentWeatherHeader extends StatelessWidget {
   final WeatherForecast forecast;
   final String locationName;
+  final bool isCurrentLocation;
 
   const CurrentWeatherHeader({
     super.key,
     required this.forecast,
     this.locationName = 'Porto',
+    this.isCurrentLocation = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final current = forecast.current;
     final today = forecast.daily.first;
+    final subtitle =
+        isCurrentLocation ? 'My Location · Updated now' : 'Updated now';
 
     return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.location_on_outlined,
-                size: 14, color: AppColors.textSecondary),
-            const SizedBox(width: 4),
-            Text('My Location · Updated now', style: AppTypography.label),
+            if (isCurrentLocation) ...[
+              const Icon(Icons.location_on_outlined,
+                  size: 14, color: AppColors.textSecondary),
+              const SizedBox(width: 4),
+            ],
+            Text(subtitle, style: AppTypography.label),
           ],
         ),
         const SizedBox(height: 4),

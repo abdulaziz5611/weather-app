@@ -5,13 +5,13 @@ import '../../../../core/usecases/usecase.dart';
 import '../entities/saved_city.dart';
 import '../repositories/cities_repository.dart';
 
-class GetSavedCities extends UseCase<List<SavedCity>, NoParams> {
+class SetActiveCity extends UseCase<void, SavedCity> {
   final CitiesRepository repository;
 
-  GetSavedCities(this.repository);
+  SetActiveCity(this.repository);
 
   @override
-  Future<Either<Failure, List<SavedCity>>> call(NoParams params) {
-    return repository.getSavedCities();
+  Future<Either<Failure, void>> call(SavedCity params) {
+    return repository.setActiveCity(params);
   }
 }
